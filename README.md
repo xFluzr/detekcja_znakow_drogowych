@@ -1,6 +1,6 @@
 # Wizja Komputerowa - Detekcja i Klasyfikacja Znaków Drogowych
 
-**Autorzy:** [Wpisz imiona i nazwiska członków grupy]
+**Autorzy:** Jakub Jaszcz, Karol Malinowski, Jakub Śliwa, Filip Konfederak, Krystian Nowak
 
 ## Krótki opis projektu
 Projekt ten realizuje system wizyjny służący do detekcji oraz klasyfikacji znaków drogowych w oparciu o klasyczne metody wizji komputerowej oraz uczenie maszynowe. Wykorzystuje bazę The German Traffic Sign Recognition Benchmark (GTSRB). W projekcie użyto dwóch różnych podejść do segmentacji znaków (klasyczne kontury vs MSER) wraz z weryfikacją w przestrzeni barw HSV. Następnie na wyodrębnionych obiektach dokonano ekstrakcji cech przy pomocy deskryptora HOG (Histogram of Oriented Gradients) i przeprowadzono ich klasyfikację maszyną wektorów nośnych (SVM) z jądrem liniowym. Projekt zawiera również graficzną aplikację desktopową (GUI) ułatwiającą testowanie modelu.

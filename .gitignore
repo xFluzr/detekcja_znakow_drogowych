@@ -2,3 +2,7 @@
 .idea
 archive
 processed_data
+svm_model.joblib
+*.tex
+*.pdf
+
