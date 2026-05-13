@@ -5,4 +5,5 @@ processed_data
 svm_model.joblib
 *.tex
 *.pdf
-
+archive
+testowe_znaki

@@ -5,7 +5,11 @@ import glob
 import shutil
 import joblib  # Do zapisu wytrenowanego modelu
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def get_hog_descriptor():
@@ -87,6 +91,19 @@ if __name__ == "__main__":
     print("Szczegółowy raport z klasyfikacji:")
     print(classification_report(y_test, y_pred))
 
+    # --- GENEROWANIE MACIERZY POMYŁEK ---
+    cm = confusion_matrix(y_test, y_pred)
+    plt.figure(figsize=(8, 6))
+    labels = [2, 12, 14, 17, 35]
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
+    plt.title("Macierz Pomyłek Klasyfikatora SVM")
+    plt.ylabel('Rzeczywista Klasa Znaku')
+    plt.xlabel('Przewidziana Klasa Znaku')
+    plt.tight_layout()
+    plt.savefig('macierz_pomylek.png')
+    plt.close()
+    print("-> Zapisano 'macierz_pomylek.png'\n")
+
     # ---- ZAPISYWANIE BŁĘDNYCH OBRAZKÓW ----
     ERRORS_DIR = 'processed_data/errors'
 
@@ -117,3 +134,23 @@ if __name__ == "__main__":
 
     print(f"\nUWAGA: Model pomylił się {error_count} razy.")
     print(f"Wszystkie błędnie sklasyfikowane zdjęcia zostały skopiowane do folderu: {ERRORS_DIR}")
+
+    # --- GENEROWANIE KOLAŻU BŁĘDÓW ---
+    error_images = []
+    # Bierzemy dokładnie 8 obrazków, żeby nie było pustych miejsc
+    for f in os.listdir(ERRORS_DIR)[:8]:
+        if f.endswith('.png'):
+            img_path = os.path.join(ERRORS_DIR, f)
+            img = cv2.imread(img_path)
+            img = cv2.resize(img, (64, 64))
+            error_images.append(img)
+    
+    if len(error_images) == 8:
+        rows = []
+        # Tworzymy 2 rzędy po 4 zdjęcia (2x4 = 8)
+        for i in range(2):
+            row = np.hstack(error_images[i*4:(i+1)*4])
+            rows.append(row)
+        collage = np.vstack(rows)
+        cv2.imwrite('bledy_modelu.png', collage)
+        print("-> Zapisano 'bledy_modelu.png' (kolaż 2x4)")
