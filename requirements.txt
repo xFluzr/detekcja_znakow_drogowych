@@ -2,3 +2,5 @@ pandas
 opencv-python
 numpy
 scikit-learn
+Pillow
+joblib

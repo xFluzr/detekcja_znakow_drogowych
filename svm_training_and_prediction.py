@@ -2,7 +2,8 @@ import os
 import cv2
 import numpy as np
 import glob
-import shutil  # Dodana biblioteka do kopiowania plików
+import shutil
+import joblib  # Do zapisu wytrenowanego modelu
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report
 
@@ -70,7 +71,10 @@ if __name__ == "__main__":
     print("Rozpoczynam trenowanie klasyfikatora SVM...")
     svm_model = SVC(kernel='linear', C=1.0, random_state=42)
     svm_model.fit(X_train, y_train)
-    print("Trening zakończony!\n")
+    
+    # --- ZAPIS MODELU DLA APLIKACJI WEBOWEJ ---
+    joblib.dump(svm_model, 'svm_model.joblib')
+    print("Trening zakończony! Model zapisano jako 'svm_model.joblib'.\n")
 
     # ==========================================
     # ETAP 3: Ewaluacja i Zapisywanie Błędów
