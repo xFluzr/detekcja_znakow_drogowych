@@ -1,6 +1,29 @@
-# Wizja Komputerowa - Detekcja i Klasyfikacja Znaków Drogowych
+<div align="center">
+  
+# System Wizyjny: Detekcja i Klasyfikacja Znaków Drogowych
 
-**Autorzy:** Jakub Jaszcz, Karol Malinowski, Jakub Śliwa, Filip Konfederak, Krystian Nowak
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green.svg)](https://opencv.org)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-Machine%20Learning-orange.svg)](https://scikit-learn.org/)
+
+**Politechnika Rzeszowska im. Ignacego Łukasiewicza (PRz)**  
+Projekt zaliczeniowy z przedmiotu **Wizja Komputerowa**
+
+</div>
+
+---
+
+## Zespół Projektowy
+
+| Imię i Nazwisko | Rola w projekcie |
+| :--- | :--- |
+| **Jakub Jaszcz** | Architektura, Klasyfikacja SVM, GUI |
+| **Karol Malinowski** | Ekstrakcja cech (HOG), Ewaluacja modelu |
+| **Jakub Śliwa** | Segmentacja MSER, Przetwarzanie obrazu |
+| **Filip Konfederak** | Detekcja krawędzi (Canny), Analiza HSV |
+| **Krystian Nowak** | Baza danych, Skrypty filtrujące, Testy |
+
+---
 
 ## Krótki opis projektu
 Projekt realizuje system wizyjny do detekcji oraz klasyfikacji znaków drogowych w oparciu o klasyczne metody wizji komputerowej i uczenie maszynowe. Wykorzystuje bazę GTSRB (German Traffic Sign Recognition Benchmark). System rozpoznaje **5 docelowych klas znaków** oraz posiada dodatkowo **klasę odrzucenia „inne"** (zbudowaną z pozostałych klas GTSRB), dzięki czemu potrafi odrzucać znaki spoza zestawu zamiast wpychać je na siłę do jednej z 5 klas. Zaimplementowano segmentację po kolorze (HSV) i analizę kształtu konturów, ekstrakcję cech HOG oraz klasyfikację liniowym SVM. Wyniki porównano z pretrenowanym detektorem YOLOv8n. Projekt zawiera graficzną aplikację desktopową (GUI) do testowania modelu.
@@ -15,15 +38,73 @@ Projekt realizuje system wizyjny do detekcji oraz klasyfikacji znaków drogowych
 | 35 | Nakaz jazdy prosto |
 | 0  | **inne** – klasa odrzucenia (znaki spoza zestawu) |
 
-## Wymagania wstępne
-Projekt wymaga języka Python w wersji 3.8 lub nowszej. Zainstaluj wymagane biblioteki:
+---
+
+## Cel Projektu i Założenia
+
+Celem projektu jest praktyczne zastosowanie klasycznych metod wizji komputerowej do rozwiązania rzeczywistego problemu: **autonomicznego rozpoznawania znaków drogowych z poziomu pojazdu**.
+
+W przeciwieństwie do rozwiązań bazujących na głębokich sieciach neuronowych (Deep Learning), projekt ten polega na **klasycznych technikach przetwarzania obrazu** (Canny, MSER, przestrzenie barw) połączonych z tradycyjnym uczeniem maszynowym (SVM). Zapewnia to lekkość obliczeniową (brak konieczności użycia akceleratorów GPU) oraz wysoką interpretowalność uzyskiwanych wyników. Wyniki zestawiono następnie z pretrenowanym detektorem głębokim YOLOv8n.
+
+---
+
+## Architektura Systemu
+
+System składa się z dwóch niezależnych potoków: przygotowania i treningu modelu oraz detekcji.
+
+### 1. Potok Treningowy
+
+```mermaid
+flowchart LR
+    A[Baza GTSRB] -->|database-filter.py| B[5 klas + klasa 'inne'\nSkalowanie 64x64]
+    B -->|Zestaw Treningowy| C[Ekstrakcja Cech HOG]
+    C -->|svm_training_and_prediction.py| D[Trening Modelu SVM\n6 klas, balanced]
+    D --> E[Ewaluacja\nMacierz Pomyłek]
+    D --> F[(svm_model.joblib)]
+```
+
+### 2. Potok Detekcji (GUI)
+
+```mermaid
+flowchart TD
+    A[Nowe Zdjęcie] --> B{Rozmiar obrazu?}
+    B -->|małe, do 150 px| C[Klasyfikacja bezpośrednia 64x64]
+    B -->|pełne zdjęcie| D[Maska barw HSV + morfologia]
+    D --> E[Kontury + filtr kształtu i proporcji]
+    E --> F[Klasyfikacja kandydatów SVM]
+    F --> G[Non-Maximum Suppression]
+    C --> H[Wynik]
+    G --> H[Ramki: zielona = znak, pomarańczowa = inne]
+```
+
+---
+
+## Wykorzystane Technologie
+
+- **Język:** Python 3.8+
+- **Przetwarzanie obrazu:** OpenCV, NumPy
+- **Ekstrakcja cech:** HOG (Histogram of Oriented Gradients)
+- **Uczenie maszynowe:** scikit-learn (Support Vector Machine z jądrem liniowym)
+- **Sieć głęboka (porównanie):** Ultralytics YOLOv8n
+- **GUI desktopowe:** Tkinter, Pillow
+- **Wizualizacja danych:** Matplotlib, Seaborn
+
+---
+
+## Instrukcja Uruchomienia
+
+### Instalacja
+
+Pobierz repozytorium i zainstaluj niezbędne biblioteki (zalecane wirtualne środowisko `.venv`):
+
 ```bash
+git clone https://github.com/xFluzr/detekcja_znakow_drogowych.git
+cd detekcja_znakow_drogowych
 pip install -r requirements.txt
 ```
 
-Przed uruchomieniem skryptów upewnij się, że w głównym katalogu projektu znajduje się folder `archive/` z~rozpakowanym zbiorem danych GTSRB (pliki `Train.csv`, `Test.csv` oraz foldery ze zdjęciami dostępne na [Kaggle](https://www.kaggle.com/datasets/meowmeowmeowmeowmeow/gtsrb-german-traffic-sign)).
-
-## Instrukcja uruchomienia (po kolei)
+> [!WARNING]
+> Przed uruchomieniem skryptów upewnij się, że w głównym katalogu znajduje się rozpakowany folder `archive/` ze zbiorem **GTSRB** (pliki `Train.csv`, `Test.csv` oraz podkatalogi z obrazami, dostępne na [Kaggle](https://www.kaggle.com/datasets/meowmeowmeowmeowmeow/gtsrb-german-traffic-sign)).
 
 ### Krok 1: Wstępne przetwarzanie i filtracja bazy
 Ekstrahuje z plików CSV 5 docelowych klas oraz buduje klasę „inne" (próbki z pozostałych klas GTSRB), skalując wszystko do 64×64 px.
@@ -40,7 +121,7 @@ python svm_training_and_prediction.py
 *Błędnie sklasyfikowane znaki kopiowane są do `processed_data/errors/` z opisową nazwą pliku.*
 
 ### Krok 3: Generowanie obrazów do raportu
-Tworzy wszystkie wizualizacje potrzebne do raportu technicznego (kolaż klas, etapy przetwarzania, MSER).
+Tworzy wizualizacje potrzebne do raportu technicznego (kolaż klas, etapy przetwarzania, MSER).
 ```bash
 python generate_report_images.py
 ```
@@ -51,7 +132,7 @@ Po wytrenowaniu `svm_model.joblib` uruchom okienkową aplikację do testowania m
 - **Wycinek znaku** (mały obraz ≤150 px) → klasyfikacja bezpośrednia,
 - **Pełne zdjęcie** → detekcja przez segmentację koloru (HSV) + analizę kształtu konturów, a następnie klasyfikacja każdego kandydata.
 
-Znaki rozpoznane jako „inne" są odrzucane (nie są rysowane / oznaczane na pomarańczowo).
+Znaki rozpoznane jako „inne" są odrzucane (oznaczane na pomarańczowo jako „Nierozpoznany").
 ```bash
 python gui.py
 ```
@@ -67,9 +148,11 @@ python yolo_train_and_compare.py # trenuje YOLOv8n i drukuje tabelę porównawcz
 ### Opcjonalnie: Testowanie algorytmów segmentacji
 Przetestuj skuteczność poszczególnych algorytmów wykrawania znaków z tła.
 ```bash
-python image-processing.py    # potok Canny + kontury geometryczne
+python image-processing.py       # potok Canny + kontury geometryczne
 python mser_image_processing.py  # potok MSER
 ```
+
+---
 
 ## Struktura projektu
 ```
@@ -101,3 +184,8 @@ Następujące elementy **nie są wersjonowane w repozytorium** (są w `.gitignor
 - `raport.tex`, `*.pdf` — raport techniczny trzymany lokalnie.
 
 Aby odtworzyć pełny projekt od zera, wystarczy pobrać `archive/` i uruchomić kroki 1–2.
+
+---
+<div align="center">
+  <i>Zaprojektowano i zaimplementowano przez studentów Politechniki Rzeszowskiej.</i>
+</div>
