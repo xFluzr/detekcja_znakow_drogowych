@@ -6,3 +6,4 @@ Pillow
 joblib
 matplotlib
 seaborn
+ultralytics
