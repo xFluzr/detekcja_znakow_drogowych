@@ -45,6 +45,10 @@ def load_hog_data(base_dir):
             class_id = int(os.path.basename(folder.path).split('_')[0])
         except ValueError:
             continue
+        # Pomijamy klasę 0 ("inne") – YOLO wykrywa tylko 5 docelowych klas,
+        # więc porównanie SVM vs YOLO musi dotyczyć tych samych 5 klas.
+        if class_id not in TARGET_CLASSES:
+            continue
         for img_path in glob.glob(os.path.join(folder.path, '*.png')):
             img = cv2.imread(img_path)
             if img is None:

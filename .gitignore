@@ -1,9 +1,50 @@
-.venv
-.idea
-archive
-processed_data
-svm_model.joblib
+# ── Środowiska / IDE ────────────────────────────────────────────
+.venv/
+.idea/
+.vscode/
+.vs/
+*.egg-info/
+
+# ── Duży dataset GTSRB ──────────────────────────────────────────
+archive/
+
+# ── Dane przetworzone i pośrednie (generowane przez skrypty) ────
+processed_data/
+yolo_dataset/
+yolo_runs/
+testowe_znaki/
+runs/
+
+# ── Wytrenowane modele (pliki binarne, generowane przez skrypty) ─
+*.joblib
+*.pkl
+
+# ── Pliki tymczasowe Pythona ─────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ── Numpy arrays i artefakty obliczeń ───────────────────────────
+*.npy
+comparison_results.txt
+
+# ── Raport LaTeX (trzymany lokalnie, nie commitujemy) ───────────
 *.tex
 *.pdf
-archive
-testowe_znaki
+
+# ── LaTeX: pliki pośrednie kompilacji ───────────────────────────
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.bbl
+*.blg
+
+# ── System operacyjny ────────────────────────────────────────────
+Thumbs.db
+.DS_Store
+Desktop.ini
